@@ -38,7 +38,7 @@ namespace algorithms {
 
 class TabularQLearningSolver {
   static inline constexpr double kDefaultDepthLimit = -1;
-  static inline constexpr double kDefaultEpsilon = 0.01;
+  static inline constexpr double kDefaultEpsilon = 0.1;
   static inline constexpr double kDefaultLearningRate = 0.01;
   static inline constexpr double kDefaultDiscountFactor = 0.99;
   static inline constexpr double kDefaultLambda = 0;
@@ -54,6 +54,7 @@ class TabularQLearningSolver {
 
   const absl::flat_hash_map<std::pair<std::string, Action>, double>&
   GetQValueTable() const;
+  bool storeQTableCSVFile();
 
  private:
   // Given a player and a state, gets the best possible action from this state

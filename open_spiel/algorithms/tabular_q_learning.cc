@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include <random>
+#include <fstream>  // For ifstream/ofstream.
 
 #include "open_spiel/abseil-cpp/absl/container/flat_hash_map.h"
 #include "open_spiel/abseil-cpp/absl/random/distributions.h"
@@ -128,6 +129,48 @@ TabularQLearningSolver::TabularQLearningSolver(
 const absl::flat_hash_map<std::pair<std::string, Action>, double>&
 TabularQLearningSolver::GetQValueTable() const {
   return values_;
+}
+
+bool TabularQLearningSolver::storeQTableCSVFile() {
+  int kNumActions = game_->NumDistinctActions();
+  std::vector<std::string> exploredStates;
+  std::string state;
+  Action action;
+  double q_value{0};
+
+  // Open file
+  std::string path = ".";
+  std::string filename = "q_table.csv";
+  std::ofstream file;
+  file.open(absl::StrCat(path, "/", filename));
+  if (!file) {
+    return false;
+  }
+
+  for (auto q_table_cell: values_) {
+    std::pair<std::string, Action> table_key = q_table_cell.first;
+    state = table_key.first;
+    action = table_key.second;
+    exploredStates.push_back(state);
+  }  
+
+  for (std::string state: exploredStates) {
+    std::string state_copy = state;
+    state_copy.erase(std::remove(state_copy.begin(), state_copy.end(), '\n'), state_copy.cend());
+    file << state_copy << ", ";
+    for (int action = 0; action < kNumActions; ++action) {
+      auto cell_it = values_.find({state, action});
+      q_value = cell_it != values_.end() ? values_[{state, action}] : 0;
+
+      file << q_value << ", ";
+    }
+    file << std::endl;
+  }
+
+  // Close file.
+  file.close();
+
+  return true;
 }
 
 void TabularQLearningSolver::RunIteration() {

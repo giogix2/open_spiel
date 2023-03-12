@@ -36,6 +36,8 @@ add_executable(tabular_sarsa_example tabular_sarsa_example.cc ${OPEN_SPIEL_OBJEC
 
 add_executable(tabular_q_learning_example tabular_q_learning_example.cc ${OPEN_SPIEL_OBJECTS})
 
+add_executable(tabular_q_learning_squadro tabular_q_learning_squadro.cc ${OPEN_SPIEL_OBJECTS})
+
 add_executable(count_all_states count_all_states.cc ${OPEN_SPIEL_OBJECTS})
 
 if (OPEN_SPIEL_BUILD_WITH_TENSORFLOW_CC)

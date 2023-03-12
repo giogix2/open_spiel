@@ -38,6 +38,43 @@ Action TabularQLearningSolver::GetBestAction(const State& state,
   double value = min_utility;
   for (const Action& action : legal_actions) {
     double q_val = values_[{state.ToString(), action}];
+    double q_val_info_state = values_info_state_[{state.InformationStateString(), action}];
+    if (q_val >= value) {
+      value = q_val;
+      best_action = action;
+    }
+  }
+  return best_action;
+}
+
+Action TabularQLearningSolver::GetBestActionFromState(std::string state) {
+  double value = game_->MinUtility();
+  int kNumActions = game_->NumDistinctActions();
+  double q_val{0};
+  Action best_action = 0;
+
+  // TODO loop only over the legal actions
+  for (int action = 0; action < kNumActions; ++action) {
+    auto cell_it = values_.find({state, action});
+    q_val = cell_it != values_.end() ? values_[{state, action}] : 0;
+    if (q_val >= value) {
+      value = q_val;
+      best_action = action;
+    }
+  }
+  return best_action;
+}
+
+Action TabularQLearningSolver::GetBestActionFromInfoState(std::string state) {
+  double value = game_->MinUtility();
+  int kNumActions = game_->NumDistinctActions();
+  double q_val{0};
+  Action best_action = 0;
+
+  // TODO loop only over the legal actions
+  for (int action = 0; action < kNumActions; ++action) {
+    auto cell_it = values_.find({state, action});
+    q_val = cell_it != values_.end() ? values_info_state_[{state, action}] : 0;
     if (q_val >= value) {
       value = q_val;
       best_action = action;
@@ -131,6 +168,11 @@ TabularQLearningSolver::GetQValueTable() const {
   return values_;
 }
 
+const absl::flat_hash_map<std::pair<std::string, Action>, double>&
+TabularQLearningSolver::GetQValueTableInfoState() const {
+  return values_info_state_;
+}
+
 bool TabularQLearningSolver::storeQTableCSVFile() {
   int kNumActions = game_->NumDistinctActions();
   std::vector<std::string> exploredStates;
@@ -202,9 +244,14 @@ void TabularQLearningSolver::RunIteration() {
 
     double prev_q_val = values_[{key, curr_action}];
     values_[{key, curr_action}] += learning_rate_ * (new_q_value - prev_q_val);
+    values_info_state_[{curr_state->InformationStateString(), curr_action}] = values_[{key, curr_action}];
 
     curr_state = std::move(next_state);
+    last_reward = reward;
   }
+}
+double TabularQLearningSolver::GetLastReward() {
+  return last_reward;
 }
 }  // namespace algorithms
 }  // namespace open_spiel

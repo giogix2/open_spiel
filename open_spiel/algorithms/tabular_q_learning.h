@@ -20,6 +20,7 @@
 #include "open_spiel/abseil-cpp/absl/random/random.h"
 #include "open_spiel/algorithms/get_all_states.h"
 #include "open_spiel/spiel.h"
+#include "open_spiel/policy.h"
 
 namespace open_spiel {
 namespace algorithms {
@@ -54,7 +55,15 @@ class TabularQLearningSolver {
 
   const absl::flat_hash_map<std::pair<std::string, Action>, double>&
   GetQValueTable() const;
+  const absl::flat_hash_map<std::pair<std::string, Action>, double>&
+  GetQValueTableInfoState() const;
   bool storeQTableCSVFile();
+
+  double GetLastReward();
+
+  Action GetBestActionFromState(std::string state);
+  Action GetBestActionFromInfoState(std::string state);
+  // Policy GetTabularPolicy();
 
  private:
   // Given a player and a state, gets the best possible action from this state
@@ -80,6 +89,8 @@ class TabularQLearningSolver {
   double lambda_;
   std::mt19937 rng_;
   absl::flat_hash_map<std::pair<std::string, Action>, double> values_;
+  absl::flat_hash_map<std::pair<std::string, Action>, double> values_info_state_;
+  double last_reward{0};
 };
 
 }  // namespace algorithms

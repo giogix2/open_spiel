@@ -171,8 +171,13 @@ std::unique_ptr<State> CatchState::Clone() const {
 
 void CatchState::DoApplyAction(Action move) {
   if (!initialized_) {
+    std::random_device rd;
+    int seed = rd();
+    std::mt19937 gen(seed);
+    std::uniform_int_distribution<int> distribution(0, kDefaultColumns-1);
     initialized_ = true;
-    ball_col_ = move;
+    ball_col_ = distribution(gen); // TODO finish
+    // std::cout << "Initialise: " << ball_col_ << std::endl;
     ball_row_ = 0;
     paddle_col_ = num_columns_ / 2;
   } else {

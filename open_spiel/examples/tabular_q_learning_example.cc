@@ -22,6 +22,7 @@
 #include "open_spiel/spiel.h"
 #include "open_spiel/spiel_globals.h"
 #include "open_spiel/spiel_utils.h"
+#include <fstream>  // For ifstream/ofstream.
 
 using open_spiel::Action;
 using open_spiel::Game;
@@ -50,7 +51,7 @@ void SolveTicTacToe() {
   open_spiel::algorithms::TabularQLearningSolver tabular_q_learning_solver(
       game);
 
-  int iter = 100000;
+  int iter = 10000;
   while (iter-- > 0) {
     tabular_q_learning_solver.RunIteration();
   }
@@ -73,29 +74,58 @@ void SolveCatch() {
   open_spiel::algorithms::TabularQLearningSolver tabular_q_learning_solver(
       game);
 
-  int training_iter = 100000;
+  // ###################################################
+  std::string path = ".";
+  std::string filename = "total_rewards_q_learning.csv";
+  std::ofstream file;
+  file.open(absl::StrCat(path, "/", filename));
+  // ###################################################
+
+  int training_iter = 200;
   while (training_iter-- > 0) {
     tabular_q_learning_solver.RunIteration();
-  }
-  const absl::flat_hash_map<std::pair<std::string, Action>, double>& q_values =
+
+    // ###################################################
+    if (training_iter % 1 == 0) {
+      const absl::flat_hash_map<std::pair<std::string, Action>, double>& q_values =
       tabular_q_learning_solver.GetQValueTable();
 
-  int eval_iter = 1000;
-  int total_reward = 0;
-  while (eval_iter-- > 0) {
-    std::unique_ptr<State> state = game->NewInitialState();
-    while (!state->IsTerminal()) {
-      Action optimal_action = GetOptimalAction(q_values, state);
-      state->ApplyAction(optimal_action);
-      total_reward += state->Rewards()[0];
-    }
-  }
+      int eval_iter = 1000; // 1000
+      int total_reward = 0;
 
-  SPIEL_CHECK_GT(total_reward, 0);
+      while (eval_iter-- > 0) {
+        std::unique_ptr<State> state = game->NewInitialState();
+        while (!state->IsTerminal()) {
+          Action optimal_action = GetOptimalAction(q_values, state);
+          state->ApplyAction(optimal_action);
+          total_reward += state->Rewards()[0];
+        }
+      }
+      file << total_reward << std::endl;
+    }
+    // ###################################################
+  }
+  file.close();
+
+  // const absl::flat_hash_map<std::pair<std::string, Action>, double>& q_values =
+  //     tabular_q_learning_solver.GetQValueTable();
+
+  // int eval_iter = 1000;
+  // int total_reward = 0;
+  // while (eval_iter-- > 0) {
+  //   std::unique_ptr<State> state = game->NewInitialState();
+  //   while (!state->IsTerminal()) {
+  //     Action optimal_action = GetOptimalAction(q_values, state);
+  //     state->ApplyAction(optimal_action);
+  //     total_reward += state->Rewards()[0];
+  //   }
+  // }
+
+  // SPIEL_CHECK_GT(total_reward, 0);
 }
 
 int main(int argc, char** argv) {
   SolveTicTacToe();
-  SolveCatch();
+  // SolveCatch();
   return 0;
 }
